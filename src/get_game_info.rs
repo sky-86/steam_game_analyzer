@@ -1,41 +1,48 @@
-use crate::SteamInfo;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
-struct StoreServiceRequest {
-    max_results: u32,
+#[derive(Serialize, Deserialize, Debug)]
+struct IdResponse {
+    #[serde(rename = "10")] 
+    id: GameInfoResponse,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct StoreServiceResponse {
-    response: Apps,
+struct GameInfoResponse {
+    success: bool,
+    data: GameInfo,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Apps {
-    apps: Vec<App>,
-    have_more_results: bool,
-    last_appid: u64,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct App {
-    appid: u64,
+struct GameInfo {
+    #[serde(rename = "type")] 
+    app_type: String,
     name: String,
-    last_modified: u64,
-    price_change_number: u64,
+    steam_appid: u32,
+    is_free: bool,
+    detailed_description: String,
+    about_the_game: String,
+    short_description: String,
+    developers: Vec<String>,
+    publishers: Vec<String>,
+    price_overview: PriceOverview,
 }
 
-pub async fn get_game_info() -> Result<()> {
-    let info = SteamInfo::new();
-    let store_request = serde_json::to_string(&StoreServiceRequest {
-        max_results: 3,
-    }).unwrap();
+#[derive(Serialize, Deserialize, Debug)]
+struct PriceOverview {
+    currency: String,
+    initial: u32,
+    #[serde(rename = "final")] 
+    final_price: u32,
+    discount_percent: u8,
+    initial_formatted: String,
+    final_formatted: String,
+}
 
+pub async fn get_game_info(id: i32) -> Result<()> {
     let url = format!(
-        "https://api.steampowered.com/IStoreService/GetAppList/v1/?key={}&input_json={}",
-        info.api_key, store_request
+        "https://store.steampowered.com/api/appdetails?appids={}",
+        id
     );
 
     let client = reqwest::Client::new();
@@ -44,13 +51,12 @@ pub async fn get_game_info() -> Result<()> {
         .header(reqwest::header::ACCEPT, "application/x-www-form-urlencoded")
         .send()
         .await?
-        .json::<StoreServiceResponse>()
+        .json::<IdResponse>()
         .await?;
 
-    let response = &request.response;
-    for app in response.apps.iter() {
-        println!("{}", app.name);
-    }
+    let response = &request.id.data;
+    println!("{}", response.name);
 
     Ok(())
+
 }

@@ -8,7 +8,8 @@ async fn main() -> Result<()> {
     //     println!("{}", id);
     // }
 
-    get_game_info().await?;
+    //get_game_review(10).await?;
+    get_game_info(10).await?;
 
     Ok(())
 }
