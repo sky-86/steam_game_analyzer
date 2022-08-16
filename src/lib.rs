@@ -1,11 +1,11 @@
 pub mod get_owned_games;
 pub mod get_game_reviews;
-pub mod get_game_info;
+pub mod fill_game_db;
 
 // prelude
 pub use get_owned_games::get_owned_games_ids;
 pub use get_game_reviews::get_game_review;
-pub use get_game_info::get_game_info;
+pub use fill_game_db::fill_game_db;
 
 #[derive(Default)]
 pub struct SteamInfo {
